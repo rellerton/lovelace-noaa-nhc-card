@@ -26,9 +26,19 @@ describe("NOAA NHC card", () => {
     expect(text).toContain("Atlantic");
     expect(text).toContain("Eastern Pacific");
     expect(text).toContain("No active storms in this configured basin");
+    expect(text).toContain("2 potential development areas");
+    expect(text).toContain("Eastern Tropical Atlantic");
     expect(text).toContain("Iselle");
     expect(text).toContain("60 kn");
     expect(card.shadowRoot?.innerHTML).not.toContain("entity_id");
+  });
+
+  it("supports an explicit MPH display preference without changing the contract", async () => {
+    const card = new NoaaNhcCard();
+    card.setConfig({ type: "custom:noaa-nhc-card", wind_speed_unit: "mph" });
+    card.hass = { callWS: vi.fn().mockResolvedValue(presentation()) } as HomeAssistant;
+    document.body.append(card);
+    await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("69 mph"));
   });
 
   it("adds and removes storms solely from refreshed contract data", async () => {
@@ -58,7 +68,7 @@ describe("NOAA NHC card", () => {
     const card = createCard([data]);
     await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("Iselle"));
     expect(card.shadowRoot?.textContent).toContain("Iselle");
-    expect(card.shadowRoot?.querySelector("img")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".storm img")).toBeNull();
   });
 
   it("distinguishes stale storm data and an active local alert", async () => {

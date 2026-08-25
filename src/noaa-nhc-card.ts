@@ -24,6 +24,11 @@ const styles = `
   .basin-head { display:flex; justify-content:space-between; gap:8px; align-items:baseline; margin-bottom:10px; }
   .basin h2 { font-size:1.08rem; margin:0; }
   .count,.muted { color:var(--secondary-text-color); }
+  .counts { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:4px 9px; }
+  .outlook { border-radius:9px; padding:9px; margin-bottom:10px; background:color-mix(in srgb,var(--warning-color,#f4b400) 13%,transparent); }
+  .outlook.unavailable { background:var(--secondary-background-color); color:var(--secondary-text-color); }
+  .outlook-title { display:flex; justify-content:space-between; gap:8px; margin-bottom:5px; }
+  .outlook-area { font-size:.84rem; margin-top:4px; }
   .quiet { padding:18px 8px; text-align:center; color:var(--secondary-text-color); }
   .storm { overflow:hidden; border-radius:10px; background:var(--secondary-background-color); margin-top:10px; border-top:4px solid var(--divider-color); }
   .storm.danger { border-top-color:var(--error-color,#db4437); }
@@ -90,7 +95,13 @@ export class NoaaNhcCard extends HTMLElement {
   }
 
   static getStubConfig(): CardConfig {
-    return { type: "custom:noaa-nhc-card", show_images: true, show_local_alerts: true };
+    return {
+      type: "custom:noaa-nhc-card",
+      show_images: true,
+      show_outlook_images: true,
+      show_local_alerts: true,
+      wind_speed_unit: "knots",
+    };
   }
 
   async refresh(): Promise<void> {
@@ -156,10 +167,37 @@ export class NoaaNhcCard extends HTMLElement {
     const contents = storms.length
       ? storms.map((storm) => this.renderStorm(storm)).join("")
       : '<div class="quiet">No active storms in this configured basin.</div>';
-    return `<section class="basin"><div class="basin-head"><h2>${escapeHtml(basin.name)}</h2><span class="count">${basin.active_count} active</span></div>${contents}</section>`;
+    return `<section class="basin"><div class="basin-head"><h2>${escapeHtml(basin.name)}</h2><span class="counts"><span class="count">${basin.active_count} active</span><span class="count">${basin.outlook.area_count} potential</span></span></div>${this.renderOutlook(basin)}${contents}</section>`;
+  }
+
+  private renderOutlook(basin: BasinPresentation): string {
+    const outlook = basin.outlook;
+    if (outlook.source_status === "unavailable") {
+      return '<div class="outlook unavailable">Seven-day development outlook unavailable.</div>';
+    }
+    if (!outlook.has_potential && outlook.source_status === "fresh") return "";
+    const areas = outlook.areas
+      .map(
+        (area) =>
+          `<div class="outlook-area"><strong>${escapeHtml(area.location ?? `Area ${area.id}`)}</strong> · ${number(area.probability_7d)}% in 7 days${area.risk_level ? ` · ${escapeHtml(area.risk_level)}` : ""}</div>`,
+      )
+      .join("");
+    const imageUrl = officialUrl(outlook.image?.url ?? null);
+    const image =
+      this._config.show_outlook_images === false || !imageUrl || !outlook.has_potential
+        ? ""
+        : `<div class="image"><img loading="lazy" src="${escapeHtml(imageUrl)}" alt="Official seven-day tropical weather outlook for ${escapeHtml(basin.name)}"></div>`;
+    const stale =
+      outlook.source_status === "stale"
+        ? '<div class="stale">Outlook data is stale; showing the last successful result.</div>'
+        : "";
+    return `<section class="outlook ${escapeHtml(outlook.source_status)}"><div class="outlook-title"><strong>${outlook.area_count} potential development ${outlook.area_count === 1 ? "area" : "areas"}</strong><span class="muted">7-day outlook</span></div>${areas}${stale}</section>${image}`;
   }
 
   private renderStorm(storm: StormPresentation): string {
+    const useMph = this._config.wind_speed_unit === "mph";
+    const wind = storm.wind_kt === null ? null : useMph ? storm.wind_kt * 1.150779 : storm.wind_kt;
+    const windUnit = useMph ? "mph" : "kn";
     const linkDefinitions: Array<[string, string | null]> = [
       ["Advisory", storm.advisory.links.public_advisory],
       ["Discussion", storm.advisory.links.forecast_discussion],
@@ -178,7 +216,7 @@ export class NoaaNhcCard extends HTMLElement {
       this._config.show_images === false || !imageUrl
         ? ""
         : `<div class="image"><img loading="lazy" src="${escapeHtml(imageUrl)}" alt="Official ${escapeHtml(storm.image?.type)} graphic for ${escapeHtml(storm.name)}"></div>`;
-    return `<article class="storm ${escapeHtml(storm.classification.severity)}">${image}<div class="storm-main"><div class="storm-title"><div><h3>${escapeHtml(storm.name)}</h3><span class="muted">${escapeHtml(storm.id.toUpperCase())} · ${escapeHtml(storm.basin.toUpperCase())}</span></div><span class="classification">${escapeHtml(storm.classification.label)}</span></div><div class="muted">Advisory ${escapeHtml(storm.advisory.number ?? "—")} · ${escapeHtml(age(storm.advisory.age_seconds))}</div><div class="facts"><div class="fact"><span class="label">Maximum wind</span><span class="value">${number(storm.wind_kt)} kn</span></div><div class="fact"><span class="label">Pressure</span><span class="value">${number(storm.pressure_hpa)} hPa</span></div><div class="fact"><span class="label">Distance / bearing</span><span class="value">${number(storm.distance_km)} km · ${number(storm.bearing_degrees)}°</span></div><div class="fact"><span class="label">Movement</span><span class="value">${number(storm.movement.direction_degrees)}° · ${number(storm.movement.speed_mph)} mph</span></div></div><div class="links">${links}</div>${storm.image?.stale ? '<div class="stale">Image is last-good cached data.</div>' : ""}</div></article>`;
+    return `<article class="storm ${escapeHtml(storm.classification.severity)}">${image}<div class="storm-main"><div class="storm-title"><div><h3>${escapeHtml(storm.name)}</h3><span class="muted">${escapeHtml(storm.id.toUpperCase())} · ${escapeHtml(storm.basin.toUpperCase())}</span></div><span class="classification">${escapeHtml(storm.classification.label)}</span></div><div class="muted">Advisory ${escapeHtml(storm.advisory.number ?? "—")} · ${escapeHtml(age(storm.advisory.age_seconds))}</div><div class="facts"><div class="fact"><span class="label">Maximum wind</span><span class="value">${number(wind)} ${windUnit}</span></div><div class="fact"><span class="label">Pressure</span><span class="value">${number(storm.pressure_hpa)} hPa</span></div><div class="fact"><span class="label">Distance / bearing</span><span class="value">${number(storm.distance_km)} km · ${number(storm.bearing_degrees)}°</span></div><div class="fact"><span class="label">Movement</span><span class="value">${number(storm.movement.direction_degrees)}° · ${number(storm.movement.speed_mph)} mph</span></div></div><div class="links">${links}</div>${storm.image?.stale ? '<div class="stale">Image is last-good cached data.</div>' : ""}</div></article>`;
   }
 }
 

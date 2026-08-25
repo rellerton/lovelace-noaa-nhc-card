@@ -7,6 +7,8 @@ export interface CardConfig {
   title?: string;
   show_images?: boolean;
   show_local_alerts?: boolean;
+  show_outlook_images?: boolean;
+  wind_speed_unit?: "knots" | "mph";
   refresh_seconds?: number;
 }
 
@@ -18,6 +20,24 @@ export interface BasinPresentation {
   active_count: number;
   has_activity: boolean;
   nearest_storm_id: string | null;
+  outlook: {
+    source_status: SourceStatus;
+    area_count: number;
+    has_potential: boolean;
+    issued_at: string | null;
+    official_url: string | null;
+    image: {
+      url: string;
+      cached_at: string | null;
+      stale: boolean;
+    } | null;
+    areas: Array<{
+      id: string;
+      probability_7d: number | null;
+      risk_level: string | null;
+      location: string | null;
+    }>;
+  };
 }
 
 export interface StormPresentation {
@@ -89,6 +109,7 @@ export interface PresentationContract {
   semantics: {
     basin_activity_is_local_alert: false;
     proximity_is_local_alert: false;
+    potential_area_is_active_storm: false;
     local_alert_source: string;
   };
 }

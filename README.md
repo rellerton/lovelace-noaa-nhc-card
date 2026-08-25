@@ -13,7 +13,7 @@ Suite** Home Assistant custom integration.
 
 This repository is local-only development software and has not been published.
 It has no Git remote or release. The card requires NOAA NHC Sensor Suite
-`0.2.0` or newer and presentation contract version `1`.
+`0.3.0` or newer and presentation contract version `1`.
 
 The backend integration remains fully useful without this card. The card does
 not inspect entity IDs or the entity registry. It requests a compact,
@@ -21,6 +21,8 @@ authenticated `noaa_nhc/presentation` WebSocket contract and dynamically
 renders:
 
 - every configured basin, including a clear quiet-basin state;
+- each basin's official seven-day potential-development area count, compact
+  risk/location summaries, and optional proxied outlook graphic;
 - every current official storm ID without dashboard edits;
 - classification severity, advisory age, wind, pressure, distance, bearing,
   movement, and compact official links;
@@ -36,8 +38,15 @@ type: custom:noaa-nhc-card
 title: Tropical Cyclones
 show_images: true
 show_local_alerts: true
+show_outlook_images: true
+wind_speed_unit: knots # or mph
 refresh_seconds: 60
 ```
+
+`wind_speed_unit` affects only the card display. The integration preserves the
+official knot value and Home Assistant's native wind-speed conversion behavior.
+Potential development areas are not named storms and are not local watches or
+warnings; the card labels them separately.
 
 The responsive layout uses one column on narrow/mobile screens and as many
 basin columns as fit on desktop.
@@ -66,4 +75,3 @@ The reproducible build writes `dist/noaa-nhc-card.js` without a source map.
 ## License
 
 [MIT](LICENSE)
-

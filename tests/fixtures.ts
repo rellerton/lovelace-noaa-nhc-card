@@ -3,7 +3,7 @@ import type { PresentationContract } from "../src/types";
 export function presentation(): PresentationContract {
   return {
     contract_version: 1,
-    integration_version: "0.2.0",
+    integration_version: "0.3.0",
     generated_at: "2026-08-25T10:00:00Z",
     freshness: {
       storm_source_status: "fresh",
@@ -15,13 +15,54 @@ export function presentation(): PresentationContract {
       alert_last_success: "2026-08-25T10:00:00Z",
     },
     basins: [
-      { id: "al", name: "Atlantic", active_count: 0, has_activity: false, nearest_storm_id: null },
+      {
+        id: "al",
+        name: "Atlantic",
+        active_count: 0,
+        has_activity: false,
+        nearest_storm_id: null,
+        outlook: {
+          source_status: "fresh",
+          area_count: 2,
+          has_potential: true,
+          issued_at: "2026-08-25T12:00:00Z",
+          official_url: "https://www.nhc.noaa.gov/xgtwo/xgtwo_atl_7d0.png",
+          image: {
+            url: "/api/noaa_nhc/v1/basins/al/outlook-image?authSig=test",
+            cached_at: null,
+            stale: false,
+          },
+          areas: [
+            {
+              id: "1",
+              probability_7d: 40,
+              risk_level: "Medium",
+              location: "Central Subtropical Atlantic",
+            },
+            {
+              id: "2",
+              probability_7d: 70,
+              risk_level: "High",
+              location: "Eastern Tropical Atlantic",
+            },
+          ],
+        },
+      },
       {
         id: "ep",
         name: "Eastern Pacific",
         active_count: 1,
         has_activity: true,
         nearest_storm_id: "ep092026",
+        outlook: {
+          source_status: "fresh",
+          area_count: 0,
+          has_potential: false,
+          issued_at: "2026-08-25T12:00:00Z",
+          official_url: "https://www.nhc.noaa.gov/xgtwo/xgtwo_pac_7d0.png",
+          image: null,
+          areas: [],
+        },
       },
     ],
     storms: [
@@ -57,6 +98,7 @@ export function presentation(): PresentationContract {
     semantics: {
       basin_activity_is_local_alert: false,
       proximity_is_local_alert: false,
+      potential_area_is_active_storm: false,
       local_alert_source: "NWS point-filtered alerts",
     },
   };
