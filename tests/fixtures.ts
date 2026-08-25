@@ -3,7 +3,7 @@ import type { PresentationContract } from "../src/types";
 export function presentation(): PresentationContract {
   return {
     contract_version: 1,
-    integration_version: "0.3.0",
+    integration_version: "0.3.2",
     generated_at: "2026-08-25T10:00:00Z",
     freshness: {
       storm_source_status: "fresh",
@@ -26,7 +26,7 @@ export function presentation(): PresentationContract {
           area_count: 2,
           has_potential: true,
           issued_at: "2026-08-25T12:00:00Z",
-          official_url: "https://www.nhc.noaa.gov/xgtwo/xgtwo_atl_7d0.png",
+          official_url: "https://www.nhc.noaa.gov/gtwo.php?basin=atlc&fdays=7",
           image: {
             url: "/api/noaa_nhc/v1/basins/al/outlook-image?authSig=test",
             cached_at: null,
@@ -59,7 +59,7 @@ export function presentation(): PresentationContract {
           area_count: 0,
           has_potential: false,
           issued_at: "2026-08-25T12:00:00Z",
-          official_url: "https://www.nhc.noaa.gov/xgtwo/xgtwo_pac_7d0.png",
+          official_url: "https://www.nhc.noaa.gov/gtwo.php?basin=epac&fdays=7",
           image: null,
           areas: [],
         },

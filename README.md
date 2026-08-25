@@ -34,7 +34,7 @@ on temporary NHC slots or user-renamable Home Assistant entity IDs.
 ## Requirements
 
 - [NOAA NHC Sensor Suite](https://github.com/rellerton/noaa-nhc-sensor-suite)
-  `0.3.0` or newer
+  `0.3.2` or newer
 - presentation contract version `1`
 - a modern Home Assistant frontend
 
@@ -154,7 +154,8 @@ For every visible basin:
 - official seven-day potential-development count;
 - compact location, probability, and risk summaries;
 - source freshness/staleness; and
-- optional authenticated official outlook imagery.
+- optional authenticated official outlook imagery that opens the corresponding
+  NHC outlook page when clicked.
 
 For every active storm in those basins:
 
@@ -164,7 +165,8 @@ For every active storm in those basins:
 - distance and bearing from the integration's configured reference location;
 - movement direction and speed;
 - official public advisory, discussion, and graphics links; and
-- optional cached official cone/watch-warning/wind-field graphic.
+- optional cached official cone/watch-warning/wind-field graphic that opens
+  the storm's current NHC graphics page when clicked.
 
 The card separately labels basin activity, geographic proximity, and an
 official alert affecting the reference point. A basin with a storm or outlook

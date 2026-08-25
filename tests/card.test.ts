@@ -29,6 +29,9 @@ describe("NOAA NHC card", () => {
     expect(text).toContain("2 potential development areas");
     expect(text).toContain("Eastern Tropical Atlantic");
     expect(card.shadowRoot?.querySelector(".outlook img")).not.toBeNull();
+    expect(card.shadowRoot?.querySelector<HTMLAnchorElement>(".outlook .image-link")?.href).toBe(
+      "https://www.nhc.noaa.gov/gtwo.php?basin=atlc&fdays=7",
+    );
     expect(text).toContain("Iselle");
     expect(text).toContain("60 kn");
     expect(card.shadowRoot?.innerHTML).not.toContain("entity_id");
@@ -67,6 +70,19 @@ describe("NOAA NHC card", () => {
     document.body.append(top);
     await vi.waitFor(() => expect(top.shadowRoot?.querySelector(".storm")).not.toBeNull());
     expect(top.shadowRoot?.querySelector(".storm")?.firstElementChild?.className).toBe("image");
+    expect(top.shadowRoot?.querySelector<HTMLAnchorElement>(".storm .image-link")?.href).toBe(
+      "https://www.nhc.noaa.gov/graphics_ep4.shtml",
+    );
+  });
+
+  it("keeps an image visible but non-clickable without a safe official parent page", async () => {
+    const data = presentation();
+    const storm = data.storms[0];
+    if (!storm) throw new Error("Missing storm fixture");
+    storm.advisory.links.forecast_graphics = "javascript:alert(1)";
+    const card = createCard([data]);
+    await vi.waitFor(() => expect(card.shadowRoot?.querySelector(".storm img")).not.toBeNull());
+    expect(card.shadowRoot?.querySelector(".storm .image-link")).toBeNull();
   });
 
   it("rejects invalid basin and image-position configuration", () => {

@@ -45,6 +45,9 @@ const styles = `
   .value { font-weight:600; }
   .links { display:flex; flex-wrap:wrap; gap:10px; }
   a { color:var(--primary-color); }
+  a.image-link { display:block; }
+  a.image-link:focus-visible { outline:3px solid var(--primary-color); outline-offset:-3px; }
+  a.image-link img { cursor:pointer; }
   img { display:block; width:100%; height:auto; max-height:460px; object-fit:contain; background:#fff; }
   .stale { color:var(--warning-color,#f4b400); font-weight:600; }
   .alert { margin-top:7px; }
@@ -211,11 +214,14 @@ export class NoaaNhcCard extends HTMLElement {
           `<div class="outlook-area"><strong>${escapeHtml(area.location ?? `Area ${area.id}`)}</strong> · ${number(area.probability_7d)}% in 7 days${area.risk_level ? ` · ${escapeHtml(area.risk_level)}` : ""}</div>`,
       )
       .join("");
-    const imageUrl = officialUrl(outlook.image?.url ?? null);
     const image =
-      this._config.show_outlook_images === false || !imageUrl || !outlook.has_potential
+      this._config.show_outlook_images === false || !outlook.has_potential
         ? ""
-        : `<div class="image"><img loading="lazy" src="${escapeHtml(imageUrl)}" alt="Official seven-day tropical weather outlook for ${escapeHtml(basin.name)}"></div>`;
+        : this.renderImage(
+            outlook.image?.url ?? null,
+            outlook.official_url,
+            `Official seven-day tropical weather outlook for ${basin.name}`,
+          );
     const stale =
       outlook.source_status === "stale"
         ? '<div class="stale">Outlook data is stale; showing the last successful result.</div>'
@@ -240,15 +246,29 @@ export class NoaaNhcCard extends HTMLElement {
           : "";
       })
       .join("");
-    const imageUrl = officialUrl(storm.image?.url ?? null);
     const image =
-      this._config.show_images === false || !imageUrl
+      this._config.show_images === false
         ? ""
-        : `<div class="image"><img loading="lazy" src="${escapeHtml(imageUrl)}" alt="Official ${escapeHtml(storm.image?.type)} graphic for ${escapeHtml(storm.name)}"></div>`;
+        : this.renderImage(
+            storm.image?.url ?? null,
+            storm.advisory.links.forecast_graphics,
+            `Official ${storm.image?.type} graphic for ${storm.name}`,
+          );
     const main = `<div class="storm-main"><div class="storm-title"><div><h3>${escapeHtml(storm.name)}</h3><span class="muted">${escapeHtml(storm.id.toUpperCase())} · ${escapeHtml(storm.basin.toUpperCase())}</span></div><span class="classification">${escapeHtml(storm.classification.label)}</span></div><div class="muted">Advisory ${escapeHtml(storm.advisory.number ?? "—")} · ${escapeHtml(age(storm.advisory.age_seconds))}</div><div class="facts"><div class="fact"><span class="label">Maximum wind</span><span class="value">${number(wind)} ${windUnit}</span></div><div class="fact"><span class="label">Pressure</span><span class="value">${number(storm.pressure_hpa)} hPa</span></div><div class="fact"><span class="label">Distance / bearing</span><span class="value">${number(storm.distance_km)} km · ${number(storm.bearing_degrees)}°</span></div><div class="fact"><span class="label">Movement</span><span class="value">${number(storm.movement.direction_degrees)}° · ${number(storm.movement.speed_mph)} mph</span></div></div><div class="links">${links}</div>${storm.image?.stale ? '<div class="stale">Image is last-good cached data.</div>' : ""}</div>`;
     const content =
       this._config.storm_image_position === "top" ? `${image}${main}` : `${main}${image}`;
     return `<article class="storm ${escapeHtml(storm.classification.severity)}">${content}</article>`;
+  }
+
+  private renderImage(imageValue: string | null, parentValue: string | null, alt: string): string {
+    const imageUrl = officialUrl(imageValue);
+    if (!imageUrl) return "";
+    const image = `<img loading="lazy" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(alt)}">`;
+    const parentUrl = officialUrl(parentValue);
+    const content = parentUrl
+      ? `<a class="image-link" href="${escapeHtml(parentUrl)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(`Open ${alt} on the NOAA National Hurricane Center website`)}">${image}</a>`
+      : image;
+    return `<div class="image">${content}</div>`;
   }
 }
 
