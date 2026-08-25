@@ -5,9 +5,11 @@ export interface HomeAssistant {
 export interface CardConfig {
   type: string;
   title?: string;
+  basins?: Array<"al" | "ep" | "cp">;
   show_images?: boolean;
   show_local_alerts?: boolean;
   show_outlook_images?: boolean;
+  storm_image_position?: "top" | "bottom";
   wind_speed_unit?: "knots" | "mph";
   refresh_seconds?: number;
 }

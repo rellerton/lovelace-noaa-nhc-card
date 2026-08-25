@@ -25,8 +25,9 @@ const styles = `
   .basin h2 { font-size:1.08rem; margin:0; }
   .count,.muted { color:var(--secondary-text-color); }
   .counts { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:4px 9px; }
-  .outlook { border-radius:9px; padding:9px; margin-bottom:10px; background:color-mix(in srgb,var(--warning-color,#f4b400) 13%,transparent); }
+  .outlook { border-radius:9px; margin-bottom:10px; overflow:hidden; background:color-mix(in srgb,var(--warning-color,#f4b400) 13%,transparent); border:1px solid color-mix(in srgb,var(--warning-color,#f4b400) 32%,transparent); }
   .outlook.unavailable { background:var(--secondary-background-color); color:var(--secondary-text-color); }
+  .outlook-main { padding:9px; }
   .outlook-title { display:flex; justify-content:space-between; gap:8px; margin-bottom:5px; }
   .outlook-area { font-size:.84rem; margin-top:4px; }
   .quiet { padding:18px 8px; text-align:center; color:var(--secondary-text-color); }
@@ -70,6 +71,20 @@ export class NoaaNhcCard extends HTMLElement {
     if (config?.type !== "custom:noaa-nhc-card") {
       throw new Error("NOAA NHC Card requires type: custom:noaa-nhc-card");
     }
+    if (
+      config.basins !== undefined &&
+      (!Array.isArray(config.basins) ||
+        config.basins.length === 0 ||
+        config.basins.some((basin) => !["al", "ep", "cp"].includes(basin)))
+    ) {
+      throw new Error("basins must be a non-empty list containing al, ep, or cp");
+    }
+    if (
+      config.storm_image_position !== undefined &&
+      !["top", "bottom"].includes(config.storm_image_position)
+    ) {
+      throw new Error("storm_image_position must be top or bottom");
+    }
     this._config = { ...config };
     this.render();
   }
@@ -91,7 +106,11 @@ export class NoaaNhcCard extends HTMLElement {
   }
 
   getCardSize(): number {
-    return Math.max(3, (this._data?.storms.length ?? 0) * 3);
+    const storms = this._data?.storms.filter(
+      (storm) =>
+        !this._config.basins || this._config.basins.includes(storm.basin as "al" | "ep" | "cp"),
+    );
+    return Math.max(3, (storms?.length ?? 0) * 3);
   }
 
   static getStubConfig(): CardConfig {
@@ -100,6 +119,7 @@ export class NoaaNhcCard extends HTMLElement {
       show_images: true,
       show_outlook_images: true,
       show_local_alerts: true,
+      storm_image_position: "bottom",
       wind_speed_unit: "knots",
     };
   }
@@ -132,9 +152,18 @@ export class NoaaNhcCard extends HTMLElement {
     if (this._error) body = `<div class="error">${escapeHtml(this._error)}</div>`;
     else if (this._data) {
       const alert = this._config.show_local_alerts === false ? "" : this.renderAlerts(this._data);
-      const basins = this._data.basins.map((basin) => this.renderBasin(basin)).join("");
+      const visibleBasins = this._config.basins
+        ? this._data.basins.filter((basin) =>
+            this._config.basins?.includes(basin.id as "al" | "ep" | "cp"),
+          )
+        : this._data.basins;
+      const basins = visibleBasins.map((basin) => this.renderBasin(basin)).join("");
       const stale = this._data.freshness.storm_source_status !== "fresh";
-      body = `${alert}${stale ? '<div class="status stale">Storm data is stale; showing the last successful NHC update.</div>' : ""}<div class="basins">${basins}</div>`;
+      const noBasins =
+        visibleBasins.length === 0
+          ? '<div class="error">None of this card’s selected basins are configured in the integration.</div>'
+          : "";
+      body = `${alert}${stale ? '<div class="status stale">Storm data is stale; showing the last successful NHC update.</div>' : ""}${noBasins}<div class="basins">${basins}</div>`;
     }
     this.shadowRoot.innerHTML = `<style>${styles}</style><ha-card><h1>${title}</h1>${body}<div class="footer">Basin activity and storm proximity do not mean your location is under an official watch or warning.</div></ha-card>`;
     for (const image of this.shadowRoot.querySelectorAll("img")) {
@@ -173,7 +202,7 @@ export class NoaaNhcCard extends HTMLElement {
   private renderOutlook(basin: BasinPresentation): string {
     const outlook = basin.outlook;
     if (outlook.source_status === "unavailable") {
-      return '<div class="outlook unavailable">Seven-day development outlook unavailable.</div>';
+      return '<div class="outlook unavailable"><div class="outlook-main">Seven-day development outlook unavailable.</div></div>';
     }
     if (!outlook.has_potential && outlook.source_status === "fresh") return "";
     const areas = outlook.areas
@@ -191,7 +220,7 @@ export class NoaaNhcCard extends HTMLElement {
       outlook.source_status === "stale"
         ? '<div class="stale">Outlook data is stale; showing the last successful result.</div>'
         : "";
-    return `<section class="outlook ${escapeHtml(outlook.source_status)}"><div class="outlook-title"><strong>${outlook.area_count} potential development ${outlook.area_count === 1 ? "area" : "areas"}</strong><span class="muted">7-day outlook</span></div>${areas}${stale}</section>${image}`;
+    return `<section class="outlook ${escapeHtml(outlook.source_status)}"><div class="outlook-main"><div class="outlook-title"><strong>${outlook.area_count} potential development ${outlook.area_count === 1 ? "area" : "areas"}</strong><span class="muted">7-day outlook</span></div>${areas}${stale}</div>${image}</section>`;
   }
 
   private renderStorm(storm: StormPresentation): string {
@@ -216,7 +245,10 @@ export class NoaaNhcCard extends HTMLElement {
       this._config.show_images === false || !imageUrl
         ? ""
         : `<div class="image"><img loading="lazy" src="${escapeHtml(imageUrl)}" alt="Official ${escapeHtml(storm.image?.type)} graphic for ${escapeHtml(storm.name)}"></div>`;
-    return `<article class="storm ${escapeHtml(storm.classification.severity)}">${image}<div class="storm-main"><div class="storm-title"><div><h3>${escapeHtml(storm.name)}</h3><span class="muted">${escapeHtml(storm.id.toUpperCase())} · ${escapeHtml(storm.basin.toUpperCase())}</span></div><span class="classification">${escapeHtml(storm.classification.label)}</span></div><div class="muted">Advisory ${escapeHtml(storm.advisory.number ?? "—")} · ${escapeHtml(age(storm.advisory.age_seconds))}</div><div class="facts"><div class="fact"><span class="label">Maximum wind</span><span class="value">${number(wind)} ${windUnit}</span></div><div class="fact"><span class="label">Pressure</span><span class="value">${number(storm.pressure_hpa)} hPa</span></div><div class="fact"><span class="label">Distance / bearing</span><span class="value">${number(storm.distance_km)} km · ${number(storm.bearing_degrees)}°</span></div><div class="fact"><span class="label">Movement</span><span class="value">${number(storm.movement.direction_degrees)}° · ${number(storm.movement.speed_mph)} mph</span></div></div><div class="links">${links}</div>${storm.image?.stale ? '<div class="stale">Image is last-good cached data.</div>' : ""}</div></article>`;
+    const main = `<div class="storm-main"><div class="storm-title"><div><h3>${escapeHtml(storm.name)}</h3><span class="muted">${escapeHtml(storm.id.toUpperCase())} · ${escapeHtml(storm.basin.toUpperCase())}</span></div><span class="classification">${escapeHtml(storm.classification.label)}</span></div><div class="muted">Advisory ${escapeHtml(storm.advisory.number ?? "—")} · ${escapeHtml(age(storm.advisory.age_seconds))}</div><div class="facts"><div class="fact"><span class="label">Maximum wind</span><span class="value">${number(wind)} ${windUnit}</span></div><div class="fact"><span class="label">Pressure</span><span class="value">${number(storm.pressure_hpa)} hPa</span></div><div class="fact"><span class="label">Distance / bearing</span><span class="value">${number(storm.distance_km)} km · ${number(storm.bearing_degrees)}°</span></div><div class="fact"><span class="label">Movement</span><span class="value">${number(storm.movement.direction_degrees)}° · ${number(storm.movement.speed_mph)} mph</span></div></div><div class="links">${links}</div>${storm.image?.stale ? '<div class="stale">Image is last-good cached data.</div>' : ""}</div>`;
+    const content =
+      this._config.storm_image_position === "top" ? `${image}${main}` : `${main}${image}`;
+    return `<article class="storm ${escapeHtml(storm.classification.severity)}">${content}</article>`;
   }
 }
 

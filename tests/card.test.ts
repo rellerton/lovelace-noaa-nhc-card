@@ -28,6 +28,7 @@ describe("NOAA NHC card", () => {
     expect(text).toContain("No active storms in this configured basin");
     expect(text).toContain("2 potential development areas");
     expect(text).toContain("Eastern Tropical Atlantic");
+    expect(card.shadowRoot?.querySelector(".outlook img")).not.toBeNull();
     expect(text).toContain("Iselle");
     expect(text).toContain("60 kn");
     expect(card.shadowRoot?.innerHTML).not.toContain("entity_id");
@@ -39,6 +40,46 @@ describe("NOAA NHC card", () => {
     card.hass = { callWS: vi.fn().mockResolvedValue(presentation()) } as HomeAssistant;
     document.body.append(card);
     await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("69 mph"));
+  });
+
+  it("filters presentation to a card-specific basin subset", async () => {
+    const card = new NoaaNhcCard();
+    card.setConfig({ type: "custom:noaa-nhc-card", basins: ["al"] });
+    card.hass = { callWS: vi.fn().mockResolvedValue(presentation()) } as HomeAssistant;
+    document.body.append(card);
+    await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("Atlantic"));
+    const text = card.shadowRoot?.textContent ?? "";
+    expect(text).toContain("2 potential development areas");
+    expect(text).not.toContain("Eastern Pacific");
+    expect(text).not.toContain("Iselle");
+  });
+
+  it("defaults storm images below text and supports a top override", async () => {
+    const bottom = createCard();
+    await vi.waitFor(() => expect(bottom.shadowRoot?.querySelector(".storm")).not.toBeNull());
+    expect(bottom.shadowRoot?.querySelector(".storm")?.firstElementChild?.className).toBe(
+      "storm-main",
+    );
+
+    const top = new NoaaNhcCard();
+    top.setConfig({ type: "custom:noaa-nhc-card", storm_image_position: "top" });
+    top.hass = { callWS: vi.fn().mockResolvedValue(presentation()) } as HomeAssistant;
+    document.body.append(top);
+    await vi.waitFor(() => expect(top.shadowRoot?.querySelector(".storm")).not.toBeNull());
+    expect(top.shadowRoot?.querySelector(".storm")?.firstElementChild?.className).toBe("image");
+  });
+
+  it("rejects invalid basin and image-position configuration", () => {
+    const card = new NoaaNhcCard();
+    expect(() => card.setConfig({ type: "custom:noaa-nhc-card", basins: [] })).toThrow(
+      "basins must be a non-empty list",
+    );
+    expect(() =>
+      card.setConfig({
+        type: "custom:noaa-nhc-card",
+        storm_image_position: "side" as "top",
+      }),
+    ).toThrow("storm_image_position must be top or bottom");
   });
 
   it("adds and removes storms solely from refreshed contract data", async () => {

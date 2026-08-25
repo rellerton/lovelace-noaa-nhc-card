@@ -36,12 +36,25 @@ renders:
 ```yaml
 type: custom:noaa-nhc-card
 title: Tropical Cyclones
+basins:
+  - al
 show_images: true
 show_local_alerts: true
 show_outlook_images: true
+storm_image_position: bottom # or top
 wind_speed_unit: knots # or mph
 refresh_seconds: 60
 ```
+
+Omit `basins` to show every basin selected in the integration. Set one or more
+basin codes (`al`, `ep`, `cp`) to make a card-specific subset. This makes it
+possible to place separate Atlantic and Pacific cards on different views while
+the integration continues collecting all selected basins.
+
+This is a normal Lovelace card and does not require a panel dashboard. It can be
+placed in masonry, sections, panel, or other compatible dashboard layouts next
+to unrelated cards. Panel mode is used only by the development lab's all-basin
+stress-test view.
 
 `wind_speed_unit` affects only the card display. The integration preserves the
 official knot value and Home Assistant's native wind-speed conversion behavior.
