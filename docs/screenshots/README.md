@@ -1,15 +1,15 @@
-# Screenshot plan
+# Screenshots
 
-Real screenshots are intentionally deferred until publication is authorized.
-Before the first public release, capture and review:
+- `all-basins-desktop.png`: live public NHC data in the authorized Home
+  Assistant lab, showing every configured basin, quiet/activity states,
+  development outlooks, simultaneous storms, and official imagery.
+- `atlantic-single-card.png`: normal non-panel Lovelace placement with a
+  card-level Atlantic filter and no active Atlantic storms.
 
-1. mobile one-column quiet Atlantic plus active Pacific basins;
-2. desktop multi-column simultaneous storms;
-3. forecast-cone imagery and graceful image-unavailable behavior;
-4. stale storm-source banner;
-5. clear, active, stale, and unavailable local-alert states; and
-6. light and dark Home Assistant themes.
+The images were reviewed before publication. They contain public NOAA/NHC data
+and a generic isolated-lab account only; no production identifiers, private
+coordinates, credentials, tokens, or private captures are included.
 
-Screenshots must use synthetic/public data or be reviewed for private location
-details before they are committed.
-
+Future releases should add light-theme, mobile-width, stale-source, active local
+alert, and unavailable-image examples when suitable privacy-safe states are
+available.

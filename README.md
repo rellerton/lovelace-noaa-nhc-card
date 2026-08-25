@@ -1,7 +1,15 @@
 # NOAA NHC Card
 
-An optional dynamic Lovelace card for the independent **NOAA NHC Sensor
-Suite** Home Assistant custom integration.
+[![Validate](https://github.com/rellerton/lovelace-noaa-nhc-card/actions/workflows/validate.yml/badge.svg)](https://github.com/rellerton/lovelace-noaa-nhc-card/actions/workflows/validate.yml)
+[![HACS](https://github.com/rellerton/lovelace-noaa-nhc-card/actions/workflows/hacs.yml/badge.svg)](https://github.com/rellerton/lovelace-noaa-nhc-card/actions/workflows/hacs.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+An optional dynamic Lovelace card for the
+[NOAA NHC Sensor Suite](https://github.com/rellerton/noaa-nhc-sensor-suite)
+Home Assistant custom integration. It renders selected basins, development
+outlooks, every active official storm, cached official graphics, source
+freshness, and authoritative point-filtered local tropical alerts without
+hard-coded entity IDs.
 
 > [!WARNING]
 > This is an unofficial community project. It is not affiliated with, endorsed
@@ -9,81 +17,218 @@ Suite** Home Assistant custom integration.
 > not use Home Assistant or this card for life-safety decisions. Always consult
 > official forecasts and instructions from local authorities.
 
-## Status
+## Why this card and integration?
 
-This repository is local-only development software and has not been published.
-It has no Git remote or release. The card requires NOAA NHC Sensor Suite
-`0.3.0` or newer and presentation contract version `1`.
+There are already many hurricane dashboards, cards, and NOAA integrations in
+the Home Assistant community. The companion projects were created with that
+ecosystem in mind, including projects such as `unclvito/nhc`,
+`dawg-io/noaa_it_all`, and `aaronmayeux/ha-hurricane-tracker`.
 
-The backend integration remains fully useful without this card. The card does
-not inspect entity IDs or the entity registry. It requests a compact,
-authenticated `noaa_nhc/presentation` WebSocket contract and dynamically
-renders:
+The goal here is not to claim the first hurricane integration. It is to provide
+an independently implemented, comprehensive and tested combination: a backend
+that can select any set of NHC basins and expose automation-friendly entities,
+plus an optional card that can filter those basins again per dashboard and
+automatically follow storms as they form or dissipate. The card never depends
+on temporary NHC slots or user-renamable Home Assistant entity IDs.
 
-- every configured basin, including a clear quiet-basin state;
-- each basin's official seven-day potential-development area count, compact
-  risk/location summaries, and optional proxied outlook graphic;
-- every current official storm ID without dashboard edits;
-- classification severity, advisory age, wind, pressure, distance, bearing,
-  movement, and compact official links;
-- stale source indications;
-- optional signed official imagery supplied on demand by the integration; and
-- point-filtered local NWS tropical watch/warning state, explicitly separated
-  from basin activity and geographic proximity.
+## Requirements
 
-## Lovelace configuration
+- [NOAA NHC Sensor Suite](https://github.com/rellerton/noaa-nhc-sensor-suite)
+  `0.3.0` or newer
+- presentation contract version `1`
+- a modern Home Assistant frontend
+
+The sensor integration is fully functional without this card.
+
+## Screenshots
+
+### All configured basins
+
+![All configured basins and active storms](docs/screenshots/all-basins-desktop.png)
+
+### One ordinary Atlantic Lovelace card
+
+This is a normal masonry card, not a panel-only dashboard:
+
+![Atlantic-only single card](docs/screenshots/atlantic-single-card.png)
+
+The graphics in these screenshots are official NHC products displayed through
+the integration's authenticated cache. No NOAA/NHC logos or graphics are bundled
+with this repository.
+
+## Installation with HACS
+
+Install the backend integration first, then add this card as a HACS custom
+repository:
+
+1. Open HACS in Home Assistant.
+2. Open the three-dot menu and select **Custom repositories**.
+3. Add `https://github.com/rellerton/lovelace-noaa-nhc-card` with category
+   **Dashboard**.
+4. Search for **NOAA NHC Card** and download it.
+5. Refresh the browser. If HACS asks for a restart, restart Home Assistant.
+6. Add `custom:noaa-nhc-card` to a dashboard using the card YAML examples below.
+
+[![Open your Home Assistant instance and add this repository to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rellerton&repository=lovelace-noaa-nhc-card&category=plugin)
+
+HACS normally registers `/hacsfiles/lovelace-noaa-nhc-card/noaa-nhc-card.js` as
+a JavaScript module. If it does not, add that URL manually under dashboard
+resources.
+
+### Manual installation
+
+Copy `dist/noaa-nhc-card.js` to `/config/www/noaa-nhc-card.js`, then register
+`/local/noaa-nhc-card.js` as a JavaScript module in dashboard resources. Refresh
+the browser before adding the card.
+
+## Basic configuration
+
+Show every basin selected in the integration:
+
+```yaml
+type: custom:noaa-nhc-card
+title: Tropical Cyclones
+```
+
+Show only Atlantic while the integration continues collecting other basins:
+
+```yaml
+type: custom:noaa-nhc-card
+title: Atlantic Basin
+basins:
+  - al
+wind_speed_unit: mph
+storm_image_position: bottom
+```
+
+Show a combined Pacific card:
+
+```yaml
+type: custom:noaa-nhc-card
+title: Pacific Basins
+basins:
+  - ep
+  - cp
+show_local_alerts: false
+show_outlook_images: true
+```
+
+## Complete configuration reference
+
+The card is currently configured through Lovelace YAML/code editor.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `type` | string | required | Must be `custom:noaa-nhc-card`. |
+| `title` | string | `Tropical Cyclones` | Card heading. |
+| `basins` | list | all integration-selected basins | Non-empty subset of `al`, `ep`, and `cp`. |
+| `show_images` | boolean | `true` | Show the selected official per-storm graphic when available. |
+| `show_outlook_images` | boolean | `true` | Show official seven-day basin outlook graphics for basins with potential areas. |
+| `show_local_alerts` | boolean | `true` | Show point-filtered local tropical alert status above basin sections. |
+| `storm_image_position` | string | `bottom` | Place storm graphics at `top` or `bottom` of each storm sub-card. |
+| `wind_speed_unit` | string | `knots` | Display maximum sustained wind as `knots` or `mph`. This does not alter backend sensor units. |
+| `refresh_seconds` | integer | `60` | Presentation refresh interval; values below 15 seconds are clamped to 15. |
+
+Full example:
 
 ```yaml
 type: custom:noaa-nhc-card
 title: Tropical Cyclones
 basins:
   - al
+  - ep
+  - cp
 show_images: true
-show_local_alerts: true
 show_outlook_images: true
-storm_image_position: bottom # or top
-wind_speed_unit: knots # or mph
+show_local_alerts: true
+storm_image_position: bottom
+wind_speed_unit: knots
 refresh_seconds: 60
 ```
 
-Omit `basins` to show every basin selected in the integration. Set one or more
-basin codes (`al`, `ep`, `cp`) to make a card-specific subset. This makes it
-possible to place separate Atlantic and Pacific cards on different views while
-the integration continues collecting all selected basins.
+## What the card displays
 
-This is a normal Lovelace card and does not require a panel dashboard. It can be
-placed in masonry, sections, panel, or other compatible dashboard layouts next
-to unrelated cards. Panel mode is used only by the development lab's all-basin
-stress-test view.
+For every visible basin:
 
-`wind_speed_unit` affects only the card display. The integration preserves the
-official knot value and Home Assistant's native wind-speed conversion behavior.
-Potential development areas are not named storms and are not local watches or
-warnings; the card labels them separately.
+- active-storm count and explicit quiet state;
+- official seven-day potential-development count;
+- compact location, probability, and risk summaries;
+- source freshness/staleness; and
+- optional authenticated official outlook imagery.
 
-The responsive layout uses one column on narrow/mobile screens and as many
-basin columns as fit on desktop.
+For every active storm in those basins:
+
+- official storm ID, name, and classification with severity styling;
+- advisory number and age;
+- maximum sustained wind and central pressure;
+- distance and bearing from the integration's configured reference location;
+- movement direction and speed;
+- official public advisory, discussion, and graphics links; and
+- optional cached official cone/watch-warning/wind-field graphic.
+
+The card separately labels basin activity, geographic proximity, and an
+official alert affecting the reference point. A basin with a storm or outlook
+area does not imply that the configured location is under a warning.
+
+## Dynamic discovery and privacy
+
+The card calls the authenticated `noaa_nhc/presentation` WebSocket command. The
+versioned bounded contract supplies stable official storm IDs, basin summaries,
+compact normalized metadata, freshness, local alerts, official links, and
+short-lived signed image URLs.
+
+The card does not search the entity registry and does not depend on entity IDs.
+The contract omits private coordinates, raw CurrentStorms/GIS/NWS payloads, and
+image bytes. Upstream text is escaped and outgoing URLs are validated before
+rendering.
+
+## Layout behavior
+
+This is a normal Lovelace card. It works in masonry, sections, panel, and other
+compatible dashboard layouts. The internal basin grid uses one column on narrow
+screens and as many columns as fit on wider cards. Each basin outlook and each
+storm is grouped in its own sub-card.
+
+If an optional image fails, only that image is removed; the basin or storm facts
+remain visible. Stale last-good data is labeled rather than silently presented
+as current.
+
+## Troubleshooting
+
+- **Custom element does not exist:** confirm HACS installed the repository,
+  verify the JavaScript resource, then hard-refresh the browser.
+- **NOAA NHC is not loaded:** install and configure the backend integration
+  before using the card.
+- **Unsupported presentation contract:** update both repositories so their
+  compatibility versions match.
+- **A selected basin is missing:** make sure the integration itself is
+  configured for that basin. Card filters cannot add a basin the backend did not
+  fetch.
+- **An image is absent:** the selected official product may not exist for that
+  storm/advisory, or the source may be temporarily unavailable. The storm data
+  remains visible.
+- **Local alert says clear while storms are active:** that is expected when no
+  matching NWS alert affects the configured reference point.
+
+## Removal
+
+Remove every `custom:noaa-nhc-card` instance from dashboards, remove its resource
+if it was added manually, then uninstall the repository through HACS. Removing
+the card does not remove or disable the backend integration.
 
 ## Development
 
 ```powershell
-npm install
+npm ci
 npm run check
-npm run test
+npm test
 npm run build
 ```
 
-The reproducible build writes `dist/noaa-nhc-card.js` without a source map.
-
-## Future publication checklist
-
-- Create the GitHub repository and remote only after explicit approval.
-- Cross-link the published integration README and this card README.
-- Publish `dist/noaa-nhc-card.js` as the HACS plugin/release artifact.
-- Replace screenshot placeholders with real mobile, desktop, quiet-basin,
-  multi-storm, stale-source, and local-alert screenshots.
-- Add final HACS installation examples and verify the minimum integration
-  version before the first release.
+The reproducible Vite build writes the minified `dist/noaa-nhc-card.js` without
+a source map. Tests cover dynamic basin/storm rendering, basin filtering,
+missing imagery/links, local alerts, source staleness, wind-unit conversion,
+image position, contract compatibility, and unsafe URL/string handling.
 
 ## License
 

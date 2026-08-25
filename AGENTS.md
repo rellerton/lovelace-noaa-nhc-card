@@ -8,12 +8,9 @@ must remain fully useful without this card.
 
 ## Repository and publication boundaries
 
-- Keep this repository and Git history independent from
-  `noaa-nhc-sensor-suite`, production Home Assistant, Aiper, Kamado Joe, and the
-  shared lab.
-- Do not create a GitHub repository, Git remote, release, pull request, package
-  publication, or other public artifact without separate explicit approval.
-- Build for eventual HACS Dashboard/plugin installation with a committed
+- Keep this repository and Git history independent from the backend
+  `noaa-nhc-sensor-suite` repository and Home Assistant configuration repos.
+- Build for HACS Dashboard/plugin installation with a committed
   browser-ready `dist/noaa-nhc-card.js` artifact.
 - Use MIT licensing and clearly state that the project is unofficial, is not
   affiliated with or endorsed by NOAA/NHC/NWS, and is not for life-safety use.
@@ -35,17 +32,14 @@ must remain fully useful without this card.
 - Use only signed/authenticated image URLs supplied by the integration. Hide an
   unavailable image without hiding the storm.
 
-## Quality and lab boundaries
+## Quality and validation boundaries
 
 - Keep source TypeScript linted and unit-tested; commit a reproducible minified
   distribution build and verify it contains no source maps or secrets.
 - Test no storms, multiple basins, simultaneous storms, new/disappearing storms,
   stale/unavailable sources, local alerts, missing fields/links/images, and
   responsive rendering.
-- Mount only `dist/noaa-nhc-card.js` read-only into the already-authorized
-  general lab. Preserve Kamado, existing lab config, and unrelated dashboards.
-- Never touch production, the Aiper lab, SMB, Node-RED, MQTT, devices, or network
-  configuration.
-- Update
-  `C:\Users\ryane\.codex\worktrees\9942\Home Assistant Work\handoffs\NHC_SENSOR_SUITE.md`
-  after material code, test, lab, or publication-state changes.
+- Never deploy to or change a contributor's production Home Assistant instance
+  as part of development or validation.
+- Keep the README, screenshots, tests, built distribution, and release metadata
+  in sync with user-visible behavior.

@@ -1,8 +1,17 @@
 {
   "name": "lovelace-noaa-nhc-card",
   "version": "0.3.0",
+  "description": "Dynamic multi-basin NOAA NHC tropical cyclone card for Home Assistant",
   "private": true,
   "type": "module",
+  "homepage": "https://github.com/rellerton/lovelace-noaa-nhc-card#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rellerton/lovelace-noaa-nhc-card.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rellerton/lovelace-noaa-nhc-card/issues"
+  },
   "scripts": {
     "build": "vite build",
     "check": "biome check . && tsc --noEmit",
