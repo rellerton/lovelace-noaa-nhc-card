@@ -46,15 +46,21 @@ The sensor integration is fully functional without this card.
 
 ![All configured basins and active storms](docs/screenshots/all-basins-desktop.png)
 
-### One ordinary Atlantic Lovelace card
+### Mobile Atlantic card
 
 This is a normal masonry card, not a panel-only dashboard:
 
-![Atlantic-only single card](docs/screenshots/atlantic-single-card.png)
+![Atlantic-only mobile card](docs/screenshots/atlantic-single-card.png)
+
+### Atlantic dashboard example
+
+The same card can be combined with ordinary Home Assistant cards and entities:
+
+![Atlantic dashboard with NOAA NHC Card and summary entities](docs/screenshots/atlantic-dashboard.png)
 
 The graphics in these screenshots are official NHC products displayed through
-the integration's authenticated cache. No NOAA/NHC logos or graphics are bundled
-with this repository.
+the integration's authenticated cache. NOAA/NHC branding is not used as this
+project's branding; it appears only inside screenshots of official products.
 
 ## Installation with HACS
 
