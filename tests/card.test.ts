@@ -45,6 +45,26 @@ describe("NOAA NHC card", () => {
     await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("69 mph"));
   });
 
+  it("shows a requested basin outlook image when there are zero potential areas", async () => {
+    const data = presentation();
+    const atlantic = data.basins[0];
+    if (!atlantic) throw new Error("Missing Atlantic fixture");
+    data.basins = [
+      {
+        ...atlantic,
+        outlook: {
+          ...atlantic.outlook,
+          area_count: 0,
+          has_potential: false,
+          areas: [],
+        },
+      },
+    ];
+    const card = createCard([data]);
+    await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("0 potential"));
+    expect(card.shadowRoot?.querySelector(".outlook img")).not.toBeNull();
+  });
+
   it("filters presentation to a card-specific basin subset", async () => {
     const card = new NoaaNhcCard();
     card.setConfig({ type: "custom:noaa-nhc-card", basins: ["al"] });

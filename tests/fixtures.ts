@@ -3,7 +3,7 @@ import type { PresentationContract } from "../src/types";
 export function presentation(): PresentationContract {
   return {
     contract_version: 1,
-    integration_version: "0.3.2",
+    integration_version: "0.3.3",
     generated_at: "2026-08-25T10:00:00Z",
     freshness: {
       storm_source_status: "fresh",

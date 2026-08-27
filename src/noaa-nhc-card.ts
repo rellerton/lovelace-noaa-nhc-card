@@ -207,21 +207,22 @@ export class NoaaNhcCard extends HTMLElement {
     if (outlook.source_status === "unavailable") {
       return '<div class="outlook unavailable"><div class="outlook-main">Seven-day development outlook unavailable.</div></div>';
     }
-    if (!outlook.has_potential && outlook.source_status === "fresh") return "";
+    const canShowImage =
+      this._config.show_outlook_images !== false && outlook.image?.url !== undefined;
+    if (!outlook.has_potential && outlook.source_status === "fresh" && !canShowImage) return "";
     const areas = outlook.areas
       .map(
         (area) =>
           `<div class="outlook-area"><strong>${escapeHtml(area.location ?? `Area ${area.id}`)}</strong> · ${number(area.probability_7d)}% in 7 days${area.risk_level ? ` · ${escapeHtml(area.risk_level)}` : ""}</div>`,
       )
       .join("");
-    const image =
-      this._config.show_outlook_images === false || !outlook.has_potential
-        ? ""
-        : this.renderImage(
-            outlook.image?.url ?? null,
-            outlook.official_url,
-            `Official seven-day tropical weather outlook for ${basin.name}`,
-          );
+    const image = !canShowImage
+      ? ""
+      : this.renderImage(
+          outlook.image?.url ?? null,
+          outlook.official_url,
+          `Official seven-day tropical weather outlook for ${basin.name}`,
+        );
     const stale =
       outlook.source_status === "stale"
         ? '<div class="stale">Outlook data is stale; showing the last successful result.</div>'

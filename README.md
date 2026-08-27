@@ -34,7 +34,7 @@ on temporary NHC slots or user-renamable Home Assistant entity IDs.
 ## Requirements
 
 - [NOAA NHC Sensor Suite](https://github.com/rellerton/noaa-nhc-sensor-suite)
-  `0.3.2` or newer
+  `0.3.3` or newer
 - presentation contract version `1`
 - a modern Home Assistant frontend
 
@@ -129,7 +129,7 @@ The card is currently configured through Lovelace YAML/code editor.
 | `title` | string | `Tropical Cyclones` | Card heading. |
 | `basins` | list | all integration-selected basins | Non-empty subset of `al`, `ep`, and `cp`. |
 | `show_images` | boolean | `true` | Show the selected official per-storm graphic when available. |
-| `show_outlook_images` | boolean | `true` | Show official seven-day basin outlook graphics for basins with potential areas. |
+| `show_outlook_images` | boolean | `true` | Show official seven-day basin outlook graphics, including when the current outlook has zero potential areas. |
 | `show_local_alerts` | boolean | `true` | Show point-filtered local tropical alert status above basin sections. |
 | `storm_image_position` | string | `bottom` | Place storm graphics at `top` or `bottom` of each storm sub-card. |
 | `wind_speed_unit` | string | `knots` | Display maximum sustained wind as `knots` or `mph`. This does not alter backend sensor units. |
