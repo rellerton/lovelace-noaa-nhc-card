@@ -45,6 +45,18 @@ describe("NOAA NHC card", () => {
     await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("69 mph"));
   });
 
+  it("supports miles while retaining kilometers as the default distance unit", async () => {
+    const kilometers = createCard();
+    await vi.waitFor(() => expect(kilometers.shadowRoot?.textContent).toContain("4000 km"));
+
+    const miles = new NoaaNhcCard();
+    miles.setConfig({ type: "custom:noaa-nhc-card", distance_unit: "miles" });
+    miles.hass = { callWS: vi.fn().mockResolvedValue(presentation()) } as HomeAssistant;
+    document.body.append(miles);
+    await vi.waitFor(() => expect(miles.shadowRoot?.textContent).toContain("2485 mi"));
+    expect(miles.shadowRoot?.textContent).not.toContain("4000 km");
+  });
+
   it("shows a requested basin outlook image when there are zero potential areas", async () => {
     const data = presentation();
     const atlantic = data.basins[0];
@@ -105,7 +117,7 @@ describe("NOAA NHC card", () => {
     expect(card.shadowRoot?.querySelector(".storm .image-link")).toBeNull();
   });
 
-  it("rejects invalid basin and image-position configuration", () => {
+  it("rejects invalid basin, image-position, and distance-unit configuration", () => {
     const card = new NoaaNhcCard();
     expect(() => card.setConfig({ type: "custom:noaa-nhc-card", basins: [] })).toThrow(
       "basins must be a non-empty list",
@@ -116,6 +128,12 @@ describe("NOAA NHC card", () => {
         storm_image_position: "side" as "top",
       }),
     ).toThrow("storm_image_position must be top or bottom");
+    expect(() =>
+      card.setConfig({
+        type: "custom:noaa-nhc-card",
+        distance_unit: "nautical_miles" as "km",
+      }),
+    ).toThrow("distance_unit must be km or miles");
   });
 
   it("adds and removes storms solely from refreshed contract data", async () => {

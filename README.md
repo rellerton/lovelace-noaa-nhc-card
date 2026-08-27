@@ -104,6 +104,7 @@ title: Atlantic Basin
 basins:
   - al
 wind_speed_unit: mph
+distance_unit: miles
 storm_image_position: bottom
 ```
 
@@ -133,6 +134,7 @@ The card is currently configured through Lovelace YAML/code editor.
 | `show_local_alerts` | boolean | `true` | Show point-filtered local tropical alert status above basin sections. |
 | `storm_image_position` | string | `bottom` | Place storm graphics at `top` or `bottom` of each storm sub-card. |
 | `wind_speed_unit` | string | `knots` | Display maximum sustained wind as `knots` or `mph`. This does not alter backend sensor units. |
+| `distance_unit` | string | `km` | Display storm distance as kilometers (`km`) or statute miles (`miles`). This does not alter backend sensor units. |
 | `refresh_seconds` | integer | `60` | Presentation refresh interval; values below 15 seconds are clamped to 15. |
 
 Full example:
@@ -149,6 +151,7 @@ show_outlook_images: true
 show_local_alerts: true
 storm_image_position: bottom
 wind_speed_unit: knots
+distance_unit: km
 refresh_seconds: 60
 ```
 
@@ -235,8 +238,9 @@ npm run build
 
 The reproducible Vite build writes the minified `dist/noaa-nhc-card.js` without
 a source map. Tests cover dynamic basin/storm rendering, basin filtering,
-missing imagery/links, local alerts, source staleness, wind-unit conversion,
-image position, contract compatibility, and unsafe URL/string handling.
+missing imagery/links, local alerts, source staleness, wind- and distance-unit
+conversion, image position, contract compatibility, and unsafe URL/string
+handling.
 
 ## License
 

@@ -4,7 +4,7 @@ function t(s) {
 function c(s, a = 0) {
   return s === null || !Number.isFinite(s) ? "—" : s.toFixed(a);
 }
-function g(s) {
+function b(s) {
   return s === null || s < 0 ? "Unknown" : s < 3600 ? `${Math.floor(s / 60)}m ago` : s < 86400 ? `${Math.floor(s / 3600)}h ago` : `${Math.floor(s / 86400)}d ago`;
 }
 function p(s) {
@@ -18,7 +18,7 @@ function p(s) {
   }
   return null;
 }
-const v = 1, _ = `
+const w = 1, x = `
   :host { display:block; }
   ha-card { padding:16px; color:var(--primary-text-color); }
   h1 { font-size:1.35rem; margin:0 0 12px; }
@@ -63,7 +63,7 @@ const v = 1, _ = `
   .error { color:var(--error-color); }
   @media (max-width:480px) { ha-card { padding:12px; } .facts { grid-template-columns:1fr; } }
 `;
-class b extends HTMLElement {
+class $ extends HTMLElement {
   _hass;
   _config = { type: "custom:noaa-nhc-card" };
   _data;
@@ -81,6 +81,8 @@ class b extends HTMLElement {
       throw new Error("basins must be a non-empty list containing al, ep, or cp");
     if (a.storm_image_position !== void 0 && !["top", "bottom"].includes(a.storm_image_position))
       throw new Error("storm_image_position must be top or bottom");
+    if (a.distance_unit !== void 0 && !["km", "miles"].includes(a.distance_unit))
+      throw new Error("distance_unit must be km or miles");
     this._config = { ...a }, this.render();
   }
   set hass(a) {
@@ -110,7 +112,8 @@ class b extends HTMLElement {
       show_outlook_images: !0,
       show_local_alerts: !0,
       storm_image_position: "bottom",
-      wind_speed_unit: "knots"
+      wind_speed_unit: "knots",
+      distance_unit: "km"
     };
   }
   async refresh() {
@@ -120,7 +123,7 @@ class b extends HTMLElement {
         const a = await this._hass.callWS({
           type: "noaa_nhc/presentation"
         });
-        if (a.contract_version !== v)
+        if (a.contract_version !== w)
           throw new Error(`Unsupported presentation contract ${a.contract_version}`);
         this._data = a, this._error = void 0, this._lastFetch = Date.now();
       } catch (a) {
@@ -138,10 +141,10 @@ class b extends HTMLElement {
     else if (this._data) {
       const i = this._config.show_local_alerts === !1 ? "" : this.renderAlerts(this._data), o = this._config.basins ? this._data.basins.filter(
         (d) => this._config.basins?.includes(d.id)
-      ) : this._data.basins, n = o.map((d) => this.renderBasin(d)).join(""), l = this._data.freshness.storm_source_status !== "fresh", r = o.length === 0 ? '<div class="error">None of this card’s selected basins are configured in the integration.</div>' : "";
-      e = `${i}${l ? '<div class="status stale">Storm data is stale; showing the last successful NHC update.</div>' : ""}${r}<div class="basins">${n}</div>`;
+      ) : this._data.basins, r = o.map((d) => this.renderBasin(d)).join(""), l = this._data.freshness.storm_source_status !== "fresh", n = o.length === 0 ? '<div class="error">None of this card’s selected basins are configured in the integration.</div>' : "";
+      e = `${i}${l ? '<div class="status stale">Storm data is stale; showing the last successful NHC update.</div>' : ""}${n}<div class="basins">${r}</div>`;
     }
-    this.shadowRoot.innerHTML = `<style>${_}</style><ha-card><h1>${a}</h1>${e}<div class="footer">Basin activity and storm proximity do not mean your location is under an official watch or warning.</div></ha-card>`;
+    this.shadowRoot.innerHTML = `<style>${x}</style><ha-card><h1>${a}</h1>${e}<div class="footer">Basin activity and storm proximity do not mean your location is under an official watch or warning.</div></ha-card>`;
     for (const i of this.shadowRoot.querySelectorAll("img"))
       i.addEventListener("error", () => i.closest(".image")?.remove(), { once: !0 });
   }
@@ -151,7 +154,7 @@ class b extends HTMLElement {
       clear: "No matching point-filtered tropical watch/warning",
       stale: "Local alert source is stale; showing the last successful result",
       unavailable: "Local tropical alert source is unavailable"
-    }[e], o = a.local_alerts.alerts.map((n) => this.renderAlert(n)).join("");
+    }[e], o = a.local_alerts.alerts.map((r) => this.renderAlert(r)).join("");
     return `<section class="status ${e}"><strong>${t(i)}</strong>${o}</section>`;
   }
   renderAlert(a) {
@@ -169,37 +172,37 @@ class b extends HTMLElement {
     const i = this._config.show_outlook_images !== !1 && e.image?.url !== void 0;
     if (!e.has_potential && e.source_status === "fresh" && !i) return "";
     const o = e.areas.map(
-      (r) => `<div class="outlook-area"><strong>${t(r.location ?? `Area ${r.id}`)}</strong> · ${c(r.probability_7d)}% in 7 days${r.risk_level ? ` · ${t(r.risk_level)}` : ""}</div>`
-    ).join(""), n = i ? this.renderImage(
+      (n) => `<div class="outlook-area"><strong>${t(n.location ?? `Area ${n.id}`)}</strong> · ${c(n.probability_7d)}% in 7 days${n.risk_level ? ` · ${t(n.risk_level)}` : ""}</div>`
+    ).join(""), r = i ? this.renderImage(
       e.image?.url ?? null,
       e.official_url,
       `Official seven-day tropical weather outlook for ${a.name}`
     ) : "", l = e.source_status === "stale" ? '<div class="stale">Outlook data is stale; showing the last successful result.</div>' : "";
-    return `<section class="outlook ${t(e.source_status)}"><div class="outlook-main"><div class="outlook-title"><strong>${e.area_count} potential development ${e.area_count === 1 ? "area" : "areas"}</strong><span class="muted">7-day outlook</span></div>${o}${l}</div>${n}</section>`;
+    return `<section class="outlook ${t(e.source_status)}"><div class="outlook-main"><div class="outlook-title"><strong>${e.area_count} potential development ${e.area_count === 1 ? "area" : "areas"}</strong><span class="muted">7-day outlook</span></div>${o}${l}</div>${r}</section>`;
   }
   renderStorm(a) {
-    const e = this._config.wind_speed_unit === "mph", i = a.wind_kt === null ? null : e ? a.wind_kt * 1.150779 : a.wind_kt, o = e ? "mph" : "kn", l = [
+    const e = this._config.wind_speed_unit === "mph", i = a.wind_kt === null ? null : e ? a.wind_kt * 1.150779 : a.wind_kt, o = e ? "mph" : "kn", r = this._config.distance_unit === "miles", l = a.distance_km === null ? null : r ? a.distance_km * 0.6213711922 : a.distance_km, n = r ? "mi" : "km", f = [
       ["Advisory", a.advisory.links.public_advisory],
       ["Discussion", a.advisory.links.forecast_discussion],
       ["Graphics", a.advisory.links.forecast_graphics]
-    ].map(([f, m]) => {
-      const u = p(m);
-      return u ? `<a href="${t(u)}" target="_blank" rel="noopener noreferrer">${f}</a>` : "";
-    }).join(""), r = this._config.show_images === !1 ? "" : this.renderImage(
+    ].map(([v, _]) => {
+      const m = p(_);
+      return m ? `<a href="${t(m)}" target="_blank" rel="noopener noreferrer">${v}</a>` : "";
+    }).join(""), u = this._config.show_images === !1 ? "" : this.renderImage(
       a.image?.url ?? null,
       a.advisory.links.forecast_graphics,
       `Official ${a.image?.type} graphic for ${a.name}`
-    ), d = `<div class="storm-main"><div class="storm-title"><div><h3>${t(a.name)}</h3><span class="muted">${t(a.id.toUpperCase())} · ${t(a.basin.toUpperCase())}</span></div><span class="classification">${t(a.classification.label)}</span></div><div class="muted">Advisory ${t(a.advisory.number ?? "—")} · ${t(g(a.advisory.age_seconds))}</div><div class="facts"><div class="fact"><span class="label">Maximum wind</span><span class="value">${c(i)} ${o}</span></div><div class="fact"><span class="label">Pressure</span><span class="value">${c(a.pressure_hpa)} hPa</span></div><div class="fact"><span class="label">Distance / bearing</span><span class="value">${c(a.distance_km)} km · ${c(a.bearing_degrees)}°</span></div><div class="fact"><span class="label">Movement</span><span class="value">${c(a.movement.direction_degrees)}° · ${c(a.movement.speed_mph)} mph</span></div></div><div class="links">${l}</div>${a.image?.stale ? '<div class="stale">Image is last-good cached data.</div>' : ""}</div>`, h = this._config.storm_image_position === "top" ? `${r}${d}` : `${d}${r}`;
-    return `<article class="storm ${t(a.classification.severity)}">${h}</article>`;
+    ), h = `<div class="storm-main"><div class="storm-title"><div><h3>${t(a.name)}</h3><span class="muted">${t(a.id.toUpperCase())} · ${t(a.basin.toUpperCase())}</span></div><span class="classification">${t(a.classification.label)}</span></div><div class="muted">Advisory ${t(a.advisory.number ?? "—")} · ${t(b(a.advisory.age_seconds))}</div><div class="facts"><div class="fact"><span class="label">Maximum wind</span><span class="value">${c(i)} ${o}</span></div><div class="fact"><span class="label">Pressure</span><span class="value">${c(a.pressure_hpa)} hPa</span></div><div class="fact"><span class="label">Distance / bearing</span><span class="value">${c(l)} ${n} · ${c(a.bearing_degrees)}°</span></div><div class="fact"><span class="label">Movement</span><span class="value">${c(a.movement.direction_degrees)}° · ${c(a.movement.speed_mph)} mph</span></div></div><div class="links">${f}</div>${a.image?.stale ? '<div class="stale">Image is last-good cached data.</div>' : ""}</div>`, g = this._config.storm_image_position === "top" ? `${u}${h}` : `${h}${u}`;
+    return `<article class="storm ${t(a.classification.severity)}">${g}</article>`;
   }
   renderImage(a, e, i) {
     const o = p(a);
     if (!o) return "";
-    const n = `<img loading="lazy" src="${t(o)}" alt="${t(i)}">`, l = p(e);
-    return `<div class="image">${l ? `<a class="image-link" href="${t(l)}" target="_blank" rel="noopener noreferrer" aria-label="${t(`Open ${i} on the NOAA National Hurricane Center website`)}">${n}</a>` : n}</div>`;
+    const r = `<img loading="lazy" src="${t(o)}" alt="${t(i)}">`, l = p(e);
+    return `<div class="image">${l ? `<a class="image-link" href="${t(l)}" target="_blank" rel="noopener noreferrer" aria-label="${t(`Open ${i} on the NOAA National Hurricane Center website`)}">${r}</a>` : r}</div>`;
   }
 }
-customElements.get("noaa-nhc-card") || customElements.define("noaa-nhc-card", b);
+customElements.get("noaa-nhc-card") || customElements.define("noaa-nhc-card", $);
 window.customCards = window.customCards ?? [];
 window.customCards.push({
   type: "noaa-nhc-card",
@@ -208,5 +211,5 @@ window.customCards.push({
   preview: !0
 });
 export {
-  b as NoaaNhcCard
+  $ as NoaaNhcCard
 };

@@ -11,6 +11,7 @@ export interface CardConfig {
   show_outlook_images?: boolean;
   storm_image_position?: "top" | "bottom";
   wind_speed_unit?: "knots" | "mph";
+  distance_unit?: "km" | "miles";
   refresh_seconds?: number;
 }
 

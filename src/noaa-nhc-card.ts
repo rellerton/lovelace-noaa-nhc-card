@@ -88,6 +88,9 @@ export class NoaaNhcCard extends HTMLElement {
     ) {
       throw new Error("storm_image_position must be top or bottom");
     }
+    if (config.distance_unit !== undefined && !["km", "miles"].includes(config.distance_unit)) {
+      throw new Error("distance_unit must be km or miles");
+    }
     this._config = { ...config };
     this.render();
   }
@@ -124,6 +127,7 @@ export class NoaaNhcCard extends HTMLElement {
       show_local_alerts: true,
       storm_image_position: "bottom",
       wind_speed_unit: "knots",
+      distance_unit: "km",
     };
   }
 
@@ -234,6 +238,14 @@ export class NoaaNhcCard extends HTMLElement {
     const useMph = this._config.wind_speed_unit === "mph";
     const wind = storm.wind_kt === null ? null : useMph ? storm.wind_kt * 1.150779 : storm.wind_kt;
     const windUnit = useMph ? "mph" : "kn";
+    const useMiles = this._config.distance_unit === "miles";
+    const distance =
+      storm.distance_km === null
+        ? null
+        : useMiles
+          ? storm.distance_km * 0.6213711922
+          : storm.distance_km;
+    const distanceUnit = useMiles ? "mi" : "km";
     const linkDefinitions: Array<[string, string | null]> = [
       ["Advisory", storm.advisory.links.public_advisory],
       ["Discussion", storm.advisory.links.forecast_discussion],
@@ -255,7 +267,7 @@ export class NoaaNhcCard extends HTMLElement {
             storm.advisory.links.forecast_graphics,
             `Official ${storm.image?.type} graphic for ${storm.name}`,
           );
-    const main = `<div class="storm-main"><div class="storm-title"><div><h3>${escapeHtml(storm.name)}</h3><span class="muted">${escapeHtml(storm.id.toUpperCase())} · ${escapeHtml(storm.basin.toUpperCase())}</span></div><span class="classification">${escapeHtml(storm.classification.label)}</span></div><div class="muted">Advisory ${escapeHtml(storm.advisory.number ?? "—")} · ${escapeHtml(age(storm.advisory.age_seconds))}</div><div class="facts"><div class="fact"><span class="label">Maximum wind</span><span class="value">${number(wind)} ${windUnit}</span></div><div class="fact"><span class="label">Pressure</span><span class="value">${number(storm.pressure_hpa)} hPa</span></div><div class="fact"><span class="label">Distance / bearing</span><span class="value">${number(storm.distance_km)} km · ${number(storm.bearing_degrees)}°</span></div><div class="fact"><span class="label">Movement</span><span class="value">${number(storm.movement.direction_degrees)}° · ${number(storm.movement.speed_mph)} mph</span></div></div><div class="links">${links}</div>${storm.image?.stale ? '<div class="stale">Image is last-good cached data.</div>' : ""}</div>`;
+    const main = `<div class="storm-main"><div class="storm-title"><div><h3>${escapeHtml(storm.name)}</h3><span class="muted">${escapeHtml(storm.id.toUpperCase())} · ${escapeHtml(storm.basin.toUpperCase())}</span></div><span class="classification">${escapeHtml(storm.classification.label)}</span></div><div class="muted">Advisory ${escapeHtml(storm.advisory.number ?? "—")} · ${escapeHtml(age(storm.advisory.age_seconds))}</div><div class="facts"><div class="fact"><span class="label">Maximum wind</span><span class="value">${number(wind)} ${windUnit}</span></div><div class="fact"><span class="label">Pressure</span><span class="value">${number(storm.pressure_hpa)} hPa</span></div><div class="fact"><span class="label">Distance / bearing</span><span class="value">${number(distance)} ${distanceUnit} · ${number(storm.bearing_degrees)}°</span></div><div class="fact"><span class="label">Movement</span><span class="value">${number(storm.movement.direction_degrees)}° · ${number(storm.movement.speed_mph)} mph</span></div></div><div class="links">${links}</div>${storm.image?.stale ? '<div class="stale">Image is last-good cached data.</div>' : ""}</div>`;
     const content =
       this._config.storm_image_position === "top" ? `${image}${main}` : `${main}${image}`;
     return `<article class="storm ${escapeHtml(storm.classification.severity)}">${content}</article>`;

@@ -1,6 +1,6 @@
 {
   "name": "lovelace-noaa-nhc-card",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Dynamic multi-basin NOAA NHC tropical cyclone card for Home Assistant",
   "private": true,
   "type": "module",
