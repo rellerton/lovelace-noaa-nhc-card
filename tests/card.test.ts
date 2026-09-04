@@ -25,6 +25,8 @@ describe("NOAA NHC card", () => {
     const text = card.shadowRoot?.textContent ?? "";
     expect(text).toContain("Atlantic");
     expect(text).toContain("Eastern Pacific");
+    expect(text).toContain("Official season: Jun 1–Nov 30 · In season");
+    expect(text).toContain("Official season: May 15–Nov 30 · Off season · starts May 15");
     expect(text).toContain("No active storms in this configured basin");
     expect(text).toContain("2 potential development areas");
     expect(text).toContain("Eastern Tropical Atlantic");
@@ -43,6 +45,14 @@ describe("NOAA NHC card", () => {
     card.hass = { callWS: vi.fn().mockResolvedValue(presentation()) } as HomeAssistant;
     document.body.append(card);
     await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("69 mph"));
+  });
+
+  it("remains compatible when an older contract omits season metadata", async () => {
+    const data = presentation();
+    for (const basin of data.basins) delete basin.season;
+    const card = createCard([data]);
+    await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("Atlantic"));
+    expect(card.shadowRoot?.textContent).not.toContain("Official season:");
   });
 
   it("supports miles while retaining kilometers as the default distance unit", async () => {

@@ -23,6 +23,13 @@ export interface BasinPresentation {
   active_count: number;
   has_activity: boolean;
   nearest_storm_id: string | null;
+  season?: {
+    in_season: boolean;
+    start: string;
+    end: string;
+    next_transition: string;
+    next_transition_type: "in_season" | "out_of_season";
+  };
   outlook: {
     source_status: SourceStatus;
     area_count: number;

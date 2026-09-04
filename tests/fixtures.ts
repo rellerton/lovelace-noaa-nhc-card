@@ -3,7 +3,7 @@ import type { PresentationContract } from "../src/types";
 export function presentation(): PresentationContract {
   return {
     contract_version: 1,
-    integration_version: "0.3.3",
+    integration_version: "0.3.6",
     generated_at: "2026-08-25T10:00:00Z",
     freshness: {
       storm_source_status: "fresh",
@@ -21,6 +21,13 @@ export function presentation(): PresentationContract {
         active_count: 0,
         has_activity: false,
         nearest_storm_id: null,
+        season: {
+          in_season: true,
+          start: "2026-06-01",
+          end: "2026-11-30",
+          next_transition: "2026-12-01",
+          next_transition_type: "out_of_season",
+        },
         outlook: {
           source_status: "fresh",
           area_count: 2,
@@ -54,6 +61,13 @@ export function presentation(): PresentationContract {
         active_count: 1,
         has_activity: true,
         nearest_storm_id: "ep092026",
+        season: {
+          in_season: false,
+          start: "2027-05-15",
+          end: "2027-11-30",
+          next_transition: "2027-05-15",
+          next_transition_type: "in_season",
+        },
         outlook: {
           source_status: "fresh",
           area_count: 0,

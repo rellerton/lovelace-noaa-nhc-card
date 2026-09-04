@@ -34,7 +34,8 @@ on temporary NHC slots or user-renamable Home Assistant entity IDs.
 ## Requirements
 
 - [NOAA NHC Sensor Suite](https://github.com/rellerton/noaa-nhc-sensor-suite)
-  `0.3.3` or newer
+  `0.3.3` or newer; `0.3.6` or newer is required to display official season
+  status
 - presentation contract version `1`
 - a modern Home Assistant frontend
 
@@ -159,6 +160,7 @@ refresh_seconds: 60
 
 For every visible basin:
 
+- NOAA's recurring official season dates and current in/out-of-season status;
 - active-storm count and explicit quiet state;
 - official seven-day potential-development count;
 - compact location, probability, and risk summaries;

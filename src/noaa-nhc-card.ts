@@ -21,8 +21,9 @@ const styles = `
   .status.unavailable { border-left:5px solid var(--disabled-text-color,#9e9e9e); }
   .basins { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); gap:14px; }
   .basin { border:1px solid var(--divider-color); border-radius:12px; padding:12px; min-width:0; }
-  .basin-head { display:flex; justify-content:space-between; gap:8px; align-items:baseline; margin-bottom:10px; }
+  .basin-head { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; margin-bottom:10px; }
   .basin h2 { font-size:1.08rem; margin:0; }
+  .season { color:var(--secondary-text-color); font-size:.78rem; margin-top:3px; }
   .count,.muted { color:var(--secondary-text-color); }
   .counts { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:4px 9px; }
   .outlook { border-radius:9px; margin-bottom:10px; overflow:hidden; background:color-mix(in srgb,var(--warning-color,#f4b400) 13%,transparent); border:1px solid color-mix(in srgb,var(--warning-color,#f4b400) 32%,transparent); }
@@ -203,7 +204,32 @@ export class NoaaNhcCard extends HTMLElement {
     const contents = storms.length
       ? storms.map((storm) => this.renderStorm(storm)).join("")
       : '<div class="quiet">No active storms in this configured basin.</div>';
-    return `<section class="basin"><div class="basin-head"><h2>${escapeHtml(basin.name)}</h2><span class="counts"><span class="count">${basin.active_count} active</span><span class="count">${basin.outlook.area_count} potential</span></span></div>${this.renderOutlook(basin)}${contents}</section>`;
+    const season = basin.season
+      ? `<div class="season">Official season: ${this.formatSeasonDate(basin.season.start)}–${this.formatSeasonDate(basin.season.end)} · ${basin.season.in_season ? "In season" : `Off season · starts ${this.formatSeasonDate(basin.season.start)}`}</div>`
+      : "";
+    return `<section class="basin"><div class="basin-head"><div><h2>${escapeHtml(basin.name)}</h2>${season}</div><span class="counts"><span class="count">${basin.active_count} active</span><span class="count">${basin.outlook.area_count} potential</span></span></div>${this.renderOutlook(basin)}${contents}</section>`;
+  }
+
+  private formatSeasonDate(value: string): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return escapeHtml(value);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    return `${months[month - 1] ?? ""} ${day}`.trim();
   }
 
   private renderOutlook(basin: BasinPresentation): string {
