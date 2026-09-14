@@ -163,6 +163,8 @@ For every visible basin:
 - NOAA's recurring official season dates and current in/out-of-season status;
 - active-storm count and explicit quiet state;
 - official seven-day potential-development count;
+- authoritative NOAA/NHC outlook publication date and time, rendered in the
+  viewing browser's locale;
 - compact location, probability, and risk summaries;
 - source freshness/staleness; and
 - optional authenticated official outlook imagery that opens the corresponding

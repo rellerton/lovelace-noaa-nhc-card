@@ -29,6 +29,8 @@ describe("NOAA NHC card", () => {
     expect(text).toContain("Official season: May 15–Nov 30 · Off season · starts May 15");
     expect(text).toContain("No active storms in this configured basin");
     expect(text).toContain("2 potential development areas");
+    expect(text).toContain("Published");
+    expect(card.shadowRoot?.querySelector(".outlook-issued")).not.toBeNull();
     expect(text).toContain("Eastern Tropical Atlantic");
     expect(card.shadowRoot?.querySelector(".outlook img")).not.toBeNull();
     expect(card.shadowRoot?.querySelector<HTMLAnchorElement>(".outlook .image-link")?.href).toBe(
@@ -53,6 +55,16 @@ describe("NOAA NHC card", () => {
     const card = createCard([data]);
     await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("Atlantic"));
     expect(card.shadowRoot?.textContent).not.toContain("Official season:");
+  });
+
+  it("omits the publication label when the outlook has no valid issue time", async () => {
+    const data = presentation();
+    const atlantic = data.basins[0];
+    if (!atlantic) throw new Error("Missing Atlantic fixture");
+    data.basins = [{ ...atlantic, outlook: { ...atlantic.outlook, issued_at: null } }];
+    const card = createCard([data]);
+    await vi.waitFor(() => expect(card.shadowRoot?.textContent).toContain("Atlantic"));
+    expect(card.shadowRoot?.querySelector(".outlook-issued")).toBeNull();
   });
 
   it("supports miles while retaining kilometers as the default distance unit", async () => {

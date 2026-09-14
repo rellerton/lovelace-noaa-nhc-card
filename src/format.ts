@@ -18,6 +18,16 @@ export function age(seconds: number | null): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
+export function localDateTime(value: string | null): string | null {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(parsed);
+}
+
 export function officialUrl(value: string | null): string | null {
   if (!value) return null;
   try {

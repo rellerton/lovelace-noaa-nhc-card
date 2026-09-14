@@ -1,4 +1,4 @@
-import { age, escapeHtml, number, officialUrl } from "./format";
+import { age, escapeHtml, localDateTime, number, officialUrl } from "./format";
 import type {
   BasinPresentation,
   CardConfig,
@@ -30,6 +30,7 @@ const styles = `
   .outlook.unavailable { background:var(--secondary-background-color); color:var(--secondary-text-color); }
   .outlook-main { padding:9px; }
   .outlook-title { display:flex; justify-content:space-between; gap:8px; margin-bottom:5px; }
+  .outlook-issued { color:var(--secondary-text-color); font-size:.78rem; margin-bottom:5px; }
   .outlook-area { font-size:.84rem; margin-top:4px; }
   .quiet { padding:18px 8px; text-align:center; color:var(--secondary-text-color); }
   .storm { overflow:hidden; border-radius:10px; background:var(--secondary-background-color); margin-top:10px; border-top:4px solid var(--divider-color); }
@@ -257,7 +258,11 @@ export class NoaaNhcCard extends HTMLElement {
       outlook.source_status === "stale"
         ? '<div class="stale">Outlook data is stale; showing the last successful result.</div>'
         : "";
-    return `<section class="outlook ${escapeHtml(outlook.source_status)}"><div class="outlook-main"><div class="outlook-title"><strong>${outlook.area_count} potential development ${outlook.area_count === 1 ? "area" : "areas"}</strong><span class="muted">7-day outlook</span></div>${areas}${stale}</div>${image}</section>`;
+    const issuedAt = localDateTime(outlook.issued_at);
+    const issued = issuedAt
+      ? `<div class="outlook-issued">Published ${escapeHtml(issuedAt)}</div>`
+      : "";
+    return `<section class="outlook ${escapeHtml(outlook.source_status)}"><div class="outlook-main"><div class="outlook-title"><strong>${outlook.area_count} potential development ${outlook.area_count === 1 ? "area" : "areas"}</strong><span class="muted">7-day outlook</span></div>${issued}${areas}${stale}</div>${image}</section>`;
   }
 
   private renderStorm(storm: StormPresentation): string {
