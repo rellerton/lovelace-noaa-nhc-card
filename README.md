@@ -1,5 +1,28 @@
 # NOAA NHC Card
 
+> [!IMPORTANT]
+> **This repository is archived.** The card is bundled with
+> [NOAA NHC Sensor Suite v0.4.0 and newer](https://github.com/rellerton/noaa-nhc-sensor-suite/releases/tag/v0.4.0)
+> and is maintained in that repository. Do not install this standalone HACS
+> dashboard repository for new setups.
+
+## Migration
+
+1. Update **NOAA NHC Sensor Suite** to v0.4.0 or newer through HACS and restart
+   Home Assistant.
+2. Keep existing dashboard YAML unchanged; `type: custom:noaa-nhc-card` is
+   still correct.
+3. The integration automatically migrates the old HACS resource URL or a
+   manual `/local/noaa-nhc-card.js` resource to its bundled module, preserving
+   the existing resource ID and removing duplicate NOAA card resources.
+4. Hard-refresh each browser or Companion App frontend once.
+5. Remove this standalone custom repository from HACS after confirming the card
+   renders. Do not manually delete the migrated bundled resource.
+
+The active source, documentation, configuration reference, issues, and future
+releases are all in
+[rellerton/noaa-nhc-sensor-suite](https://github.com/rellerton/noaa-nhc-sensor-suite).
+
 [![Validate](https://github.com/rellerton/lovelace-noaa-nhc-card/actions/workflows/validate.yml/badge.svg)](https://github.com/rellerton/lovelace-noaa-nhc-card/actions/workflows/validate.yml)
 [![HACS](https://github.com/rellerton/lovelace-noaa-nhc-card/actions/workflows/hacs.yml/badge.svg)](https://github.com/rellerton/lovelace-noaa-nhc-card/actions/workflows/hacs.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -63,30 +86,12 @@ The graphics in these screenshots are official NHC products displayed through
 the integration's authenticated cache. NOAA/NHC branding is not used as this
 project's branding; it appears only inside screenshots of official products.
 
-## Installation with HACS
+## Installation
 
-Install the backend integration first, then add this card as a HACS custom
-repository:
-
-1. Open HACS in Home Assistant.
-2. Open the three-dot menu and select **Custom repositories**.
-3. Add `https://github.com/rellerton/lovelace-noaa-nhc-card` with category
-   **Dashboard**.
-4. Search for **NOAA NHC Card** and download it.
-5. Refresh the browser. If HACS asks for a restart, restart Home Assistant.
-6. Add `custom:noaa-nhc-card` to a dashboard using the card YAML examples below.
-
-[![Open your Home Assistant instance and add this repository to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rellerton&repository=lovelace-noaa-nhc-card&category=plugin)
-
-HACS normally registers `/hacsfiles/lovelace-noaa-nhc-card/noaa-nhc-card.js` as
-a JavaScript module. If it does not, add that URL manually under dashboard
-resources.
-
-### Manual installation
-
-Copy `dist/noaa-nhc-card.js` to `/config/www/noaa-nhc-card.js`, then register
-`/local/noaa-nhc-card.js` as a JavaScript module in dashboard resources. Refresh
-the browser before adding the card.
+Install the card through the default HACS **Integration** entry for
+[NOAA NHC Sensor Suite](https://github.com/rellerton/noaa-nhc-sensor-suite).
+The integration serves and registers the card automatically for storage-mode
+dashboards.
 
 ## Basic configuration
 

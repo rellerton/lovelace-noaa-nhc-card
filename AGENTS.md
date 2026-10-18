@@ -2,16 +2,17 @@
 
 ## Purpose
 
-This repository contains the optional Lovelace companion card for the
-independent NOAA NHC Sensor Suite custom integration. The backend integration
-must remain fully useful without this card.
+This is the archived legacy repository for the NOAA NHC Lovelace card. As of
+NOAA NHC Sensor Suite v0.4.0, the card source, tests, build, screenshots, and
+runtime module live in the integration repository. Preserve this repository as
+read-only migration history; do not resume releases here.
 
 ## Repository and publication boundaries
 
 - Keep this repository and Git history independent from the backend
   `noaa-nhc-sensor-suite` repository and Home Assistant configuration repos.
-- Build for HACS Dashboard/plugin installation with a committed
-  browser-ready `dist/noaa-nhc-card.js` artifact.
+- Keep the final browser-ready `dist/noaa-nhc-card.js` artifact for historical
+  installs, but direct all users to the bundled integration release.
 - Use MIT licensing and clearly state that the project is unofficial, is not
   affiliated with or endorsed by NOAA/NHC/NWS, and is not for life-safety use.
 - Do not use NOAA/NHC logos or imply official branding.
